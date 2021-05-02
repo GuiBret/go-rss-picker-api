@@ -10,7 +10,8 @@ import (
 
 type Feed struct {
 	gorm.Model
-	Url string
+	Url  string
+	Name string
 }
 
 type Group struct {
