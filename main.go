@@ -13,8 +13,8 @@ var db *gorm.DB
 
 type Feed struct {
 	gorm.Model
-	id  int
-	url string
+	Id  int
+	Url string
 }
 
 type Group struct {
@@ -52,7 +52,6 @@ func handleRequests() {
 }
 
 func ListGroups(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func AddGroup(w http.ResponseWriter, r *http.Request) {
