@@ -1,18 +1,37 @@
 package database
 
 import (
+	"errors"
+	"log"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func GetConnection() *gorm.DB {
+type Feed struct {
+	gorm.Model
+	Url string
+}
 
-	dsn := ""
+type Group struct {
+	gorm.Model
+	Name         string
+	FeedsInGroup []Feed `gorm:"many2many:group_feed;"`
+}
+
+func GetConnection() (*gorm.DB, error) {
+
+	dsn := "user:password@tcp(127.0.0.1:3309)/feeds_database"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		panic("Connection failed")
+		log.Fatal("Connection failed")
+		return nil, errors.New("Connection failed")
 	}
 
-	return db
+	return db, nil
+}
+
+func MakeMigration(db *gorm.DB) {
+	db.AutoMigrate(&Feed{}, &Group{})
 }
