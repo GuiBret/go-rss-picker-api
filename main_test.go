@@ -1,23 +1,30 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 )
 
 func TestListGroups(t *testing.T) {
 	t.Run("Should return a list", func(t *testing.T) {
 
-		req, _ := http.NewRequest("GET", "/posts", nil)
+		req, _ := http.NewRequest("GET", "http://localhost:4005/groups", nil)
 
+		v := GroupList{}
 		response := httptest.NewRecorder()
 
 		ListGroups(response, req)
 
-		if reflect.TypeOf(response.Body).Name() != "FeedList" {
-			t.Errorf("Type error, expected %s got %s", "FeedList", reflect.TypeOf(response.Body).Name())
+		body, _ := ioutil.ReadAll(response.Body)
+		err := json.Unmarshal(body, &v)
+
+		fmt.Printf("%s", response.Body.String())
+		if err != nil {
+			t.Errorf("Type error : %s", err)
 		}
 	})
 }
