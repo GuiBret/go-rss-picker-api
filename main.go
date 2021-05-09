@@ -38,11 +38,6 @@ type GroupBody struct {
 	Name string `json:"name"`
 }
 
-type FeedBody struct {
-	Url  string `json:"url"`
-	Name string `json:"name"`
-}
-
 var group Group
 
 func main() {
@@ -171,11 +166,10 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "application/json")
 
-	db, err := database.GetConnection()
-
 	decoder := json.NewDecoder(r.Body)
-	body := FeedBody{}
-	err = decoder.Decode(&body)
+	body := database.FeedBody{}
+
+	err := decoder.Decode(&body)
 
 	// Invalid body
 	if err != nil {
@@ -190,16 +184,11 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Everything OK, we store the feed and return 201
-	feed := Feed{
-		Url:  body.Url,
-		Name: body.Name,
-	}
-
-	db.Create(&feed)
+	id, err := database.CreateFeed(body, w)
 
 	w.WriteHeader(http.StatusCreated)
 
-	fmt.Fprintf(w, `{"id": %d}`, feed.ID)
+	fmt.Fprintf(w, `{"id": %d}`, id)
 	// json.NewEncoder(w).Encode(fmt.Fprintf(`{"id": %d`, feed.ID))
 
 }
