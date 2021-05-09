@@ -105,7 +105,7 @@ func TestAddFeed(t *testing.T) {
 	t.Run("Should return an error since the body is invalid", func(t *testing.T) {
 		body := strings.NewReader(``)
 
-		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+		req, _ := http.NewRequest("POST", "http://localhost:4005/feeds", body)
 
 		rr := httptest.NewRecorder()
 
@@ -121,7 +121,7 @@ func TestAddFeed(t *testing.T) {
 	t.Run("Should return an error since the body is invalid", func(t *testing.T) {
 		body := strings.NewReader(`{}`)
 
-		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+		req, _ := http.NewRequest("POST", "http://localhost:4005/feeds", body)
 
 		rr := httptest.NewRecorder()
 
@@ -137,7 +137,7 @@ func TestAddFeed(t *testing.T) {
 	t.Run("Should return HTTP created since everything is valid", func(t *testing.T) {
 		body := strings.NewReader(`{"name": "My feed", "url": "https://cnn.com/feed"}`)
 
-		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+		req, _ := http.NewRequest("POST", "http://localhost:4005/feeds", body)
 
 		rr := httptest.NewRecorder()
 

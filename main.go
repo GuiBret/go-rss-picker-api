@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"rss-picker-api/database"
@@ -198,7 +199,8 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(nil)
+	fmt.Fprintf(w, `{"id": %d}`, feed.ID)
+	// json.NewEncoder(w).Encode(fmt.Fprintf(`{"id": %d`, feed.ID))
 
 }
 func DeleteFeed(w http.ResponseWriter, r *http.Request) {
