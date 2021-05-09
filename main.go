@@ -53,9 +53,21 @@ func main() {
 	handleRequests()
 }
 
+func SetHeaderAsJSON(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+
+		next.ServeHTTP(w, r)
+	})
+
+}
+
 func handleRequests() {
 
 	myRouter := mux.NewRouter()
+
+	// Middleware setting all return types to JSON
+	myRouter.Use(SetHeaderAsJSON)
 
 	myRouter.HandleFunc("/groups", ListGroups).Methods("GET")
 	myRouter.HandleFunc("/groups", AddGroup).Methods("POST")
@@ -74,8 +86,6 @@ func handleRequests() {
 }
 
 func ListGroups(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Add("Content-Type", "application/json")
 
 	db, err := database.GetConnection()
 
@@ -144,8 +154,6 @@ func DeleteFeedFromGroup(w http.ResponseWriter, r *http.Request) {
 
 func ListFeeds(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Add("Content-Type", "application/json")
-
 	db, err := database.GetConnection()
 
 	if err != nil {
@@ -163,8 +171,6 @@ func ListFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddFeed(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Add("Content-Type", "application/json")
 
 	decoder := json.NewDecoder(r.Body)
 	body := database.FeedBody{}
@@ -186,10 +192,13 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 	// Everything OK, we store the feed and return 201
 	id, err := database.CreateFeed(body, w)
 
+	if err != nil {
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
 
 	fmt.Fprintf(w, `{"id": %d}`, id)
-	// json.NewEncoder(w).Encode(fmt.Fprintf(`{"id": %d`, feed.ID))
 
 }
 func DeleteFeed(w http.ResponseWriter, r *http.Request) {
