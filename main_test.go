@@ -51,7 +51,7 @@ func TestListFeeds(t *testing.T) {
 
 func TestAddGroup(t *testing.T) {
 	t.Run("Should return an error since the body is invalid", func(t *testing.T) {
-		body := strings.NewReader(`{}`)
+		body := strings.NewReader(``)
 
 		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
 
@@ -98,5 +98,55 @@ func TestAddGroup(t *testing.T) {
 			t.Errorf("Expected HTTP 201 but got %d", status)
 		}
 
+	})
+}
+
+func TestAddFeed(t *testing.T) {
+	t.Run("Should return an error since the body is invalid", func(t *testing.T) {
+		body := strings.NewReader(``)
+
+		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(AddFeed)
+
+		handler.ServeHTTP(rr, req)
+
+		if status := rr.Code; status != http.StatusBadRequest {
+			t.Errorf("Status error, expected %d got %d", http.StatusBadRequest, status)
+		}
+	})
+
+	t.Run("Should return an error since the body is invalid", func(t *testing.T) {
+		body := strings.NewReader(`{}`)
+
+		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(AddFeed)
+
+		handler.ServeHTTP(rr, req)
+
+		if status := rr.Code; status != http.StatusBadRequest {
+			t.Errorf("Status error, expected %d got %d", http.StatusBadRequest, status)
+		}
+	})
+
+	t.Run("Should return HTTP created since everything is valid", func(t *testing.T) {
+		body := strings.NewReader(`{"name": "My feed", "url": "https://cnn.com/feed"}`)
+
+		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(AddFeed)
+
+		handler.ServeHTTP(rr, req)
+
+		if status := rr.Code; status != http.StatusCreated {
+			t.Errorf("Status error, expected %d got %d", http.StatusCreated, status)
+		}
 	})
 }

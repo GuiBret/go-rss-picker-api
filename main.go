@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"rss-picker-api/database"
@@ -35,6 +34,11 @@ type GroupList struct {
 }
 
 type GroupBody struct {
+	Name string `json:"name"`
+}
+
+type FeedBody struct {
+	Url  string `json:"url"`
 	Name string `json:"name"`
 }
 
@@ -103,7 +107,6 @@ func AddGroup(w http.ResponseWriter, r *http.Request) {
 	db, err := database.GetConnection()
 
 	if err != nil {
-		fmt.Printf(err.Error())
 
 		http.Error(w, "Error", http.StatusInternalServerError)
 		return
@@ -118,8 +121,6 @@ func AddGroup(w http.ResponseWriter, r *http.Request) {
 		Name:         body.Name,
 		FeedsInGroup: []Feed{},
 	}
-
-	fmt.Printf("%v", group)
 
 	db.Create(&group)
 
@@ -166,6 +167,38 @@ func ListFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddFeed(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Add("Content-Type", "application/json")
+
+	db, err := database.GetConnection()
+
+	decoder := json.NewDecoder(r.Body)
+	body := FeedBody{}
+	err = decoder.Decode(&body)
+
+	// Invalid body
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Missing params
+	if body.Name == "" || body.Url == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Everything OK, we store the feed and return 201
+	feed := Feed{
+		Url:  body.Url,
+		Name: body.Name,
+	}
+
+	db.Create(&feed)
+
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(nil)
 
 }
 func DeleteFeed(w http.ResponseWriter, r *http.Request) {
