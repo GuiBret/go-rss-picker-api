@@ -18,20 +18,20 @@ type GroupBody struct {
 
 func CreateGroup(body GroupBody, w http.ResponseWriter) (Group, error) {
 
-	var group Group
+	var result Group
 	db, err := GetConnection()
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return group, err
+		return result, err
 	}
 
-	group = Group{
+	result = Group{
 		Name:         body.Name,
 		FeedsInGroup: []Feed{},
 	}
 
-	db.Create(&group)
+	db.Create(&result)
 
-	return group, nil
+	return result, nil
 }
