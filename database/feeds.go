@@ -4,17 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
-	"gorm.io/gorm"
 )
 
 type FeedBody struct {
 	Url  string `json:"url"`
 	Name string `json:"name"`
 }
-
-var err error
-var db *gorm.DB
 
 func CreateFeed(body FeedBody, w http.ResponseWriter) (uint, error) {
 

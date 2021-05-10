@@ -19,9 +19,8 @@ type GroupBody struct {
 func CreateGroup(body GroupBody, w http.ResponseWriter) (Group, error) {
 
 	var result Group
-	db, err := GetConnection()
 
-	if err != nil {
+	if db, err = GetConnection(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return result, err
 	}

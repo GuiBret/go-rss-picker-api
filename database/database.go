@@ -16,6 +16,9 @@ type Feed struct {
 	Name string
 }
 
+var err error
+var db *gorm.DB
+
 func GetConnection() (*gorm.DB, error) {
 
 	dsn := "user:password@tcp(127.0.0.1:3309)/feeds_database?parseTime=true"
