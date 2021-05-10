@@ -2,7 +2,9 @@ package database
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"net/http"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,12 +14,6 @@ type Feed struct {
 	gorm.Model
 	Url  string
 	Name string
-}
-
-type Group struct {
-	gorm.Model
-	Name         string
-	FeedsInGroup []Feed `gorm:"many2many:group_feed;"`
 }
 
 func GetConnection() (*gorm.DB, error) {
@@ -35,4 +31,9 @@ func GetConnection() (*gorm.DB, error) {
 
 func MakeMigration(db *gorm.DB) {
 	db.AutoMigrate(&Feed{}, &Group{})
+}
+
+func HandleConnectionError(err error, w http.ResponseWriter) {
+	fmt.Fprintf(w, "DB connection error : %s", err.Error())
+	w.WriteHeader(http.StatusInternalServerError)
 }

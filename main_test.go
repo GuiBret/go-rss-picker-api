@@ -77,13 +77,9 @@ func TestAddGroup(t *testing.T) {
 	t.Run("Should return an error since the body is invalid", func(t *testing.T) {
 		body := strings.NewReader(``)
 
-		req, _ := http.NewRequest("POST", "http://localhost:4005/groups", body)
+		req, _ := http.NewRequest("POST", "/groups", body)
 
-		rr := httptest.NewRecorder()
-
-		handler := http.HandlerFunc(AddGroup)
-
-		handler.ServeHTTP(rr, req)
+		rr := executeRequest(req)
 
 		if status := rr.Code; status != http.StatusBadRequest {
 			t.Errorf("Expected HTTP 400 but got %d", status)
@@ -238,12 +234,9 @@ func TestDeleteFeed(t *testing.T) {
 			panic("Pre test error")
 		}
 
-		fmt.Printf("%v", a)
-		req, _ := http.NewRequest("DELETE", "/feeds/"+fmt.Sprint(id)+"/", nil)
+		req, _ := http.NewRequest("DELETE", "/feeds/"+fmt.Sprint(id), nil)
 
 		rr := executeRequest(req)
-
-		fmt.Print(rr.Body)
 
 		// The request should have returned 200 since the entity was deleted
 		if status := rr.Code; status != http.StatusOK {

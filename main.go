@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"rss-picker-api/database"
@@ -21,29 +20,16 @@ type Feed struct {
 	Name string `json:"name"`
 }
 
-type Group struct {
-	gorm.Model
-	Name         string `json:"name"`
-	FeedsInGroup []Feed `gorm:"many2many:group_feed;"`
-}
-
 type FeedList struct {
 	Feeds []Feed `json:"feeds"`
 }
 
 type GroupList struct {
-	Groups []Group `json:"groups"`
+	Groups []database.Group `json:"groups"`
 }
-
-type GroupBody struct {
-	Name string `json:"name"`
-}
-
-var group Group
 
 type App struct {
 	Router *mux.Router
-	DB     *gorm.DB
 }
 
 func (a *App) Initialize() {
@@ -58,7 +44,7 @@ func (a *App) Initialize() {
 	a.Router = mux.NewRouter()
 
 	a.handleRequests()
-	a.DB = db
+
 	database.MakeMigration(db)
 
 }
@@ -99,7 +85,7 @@ func (a *App) handleRequests() {
 	a.Router.HandleFunc("/groups/{groupId}/feeds/{feedId}", AddFeedToGroup).Methods("POST")
 	a.Router.HandleFunc("/groups/{groupId}/feeds/{feedId}", RemoveFeedFromGroup).Methods("DELETE")
 
-	a.Router.HandleFunc("/feeds/{feedId}/", DeleteFeed).Methods("DELETE")
+	a.Router.HandleFunc("/feeds/{feedId}", DeleteFeed).Methods("DELETE")
 	a.Router.HandleFunc("/feeds", ListFeeds).Methods("GET")
 	a.Router.HandleFunc("/feeds", AddFeed).Methods("POST")
 
@@ -113,7 +99,7 @@ func ListGroups(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	var groups []Group
+	var groups []database.Group
 	var groupResult GroupList
 
 	db.Find(&groups)
@@ -127,14 +113,12 @@ func ListGroups(w http.ResponseWriter, r *http.Request) {
 func AddGroup(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	body := GroupBody{}
+	body := database.GroupBody{}
 	err := decoder.Decode(&body)
-
-	db, err := database.GetConnection()
 
 	if err != nil {
 
-		http.Error(w, "Error", http.StatusInternalServerError)
+		http.Error(w, "Invalid body", http.StatusBadRequest)
 		return
 	}
 
@@ -143,16 +127,15 @@ func AddGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	group := Group{
-		Name:         body.Name,
-		FeedsInGroup: []Feed{},
-	}
+	group, err := database.CreateGroup(body, w)
 
-	db.Create(&group)
+	if err != nil {
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(nil)
+	json.NewEncoder(w).Encode(group)
 
 }
 
@@ -213,7 +196,6 @@ func DeleteFeed(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseUint(idStr, 10, 32)
 
-	fmt.Printf("Id : %s", idStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

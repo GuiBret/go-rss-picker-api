@@ -11,11 +11,6 @@ type FeedBody struct {
 	Name string `json:"name"`
 }
 
-func HandleConnectionError(err error, w http.ResponseWriter) {
-	fmt.Fprintf(w, "DB connection error : %s", err.Error())
-	w.WriteHeader(http.StatusInternalServerError)
-}
-
 func CreateFeed(body FeedBody, w http.ResponseWriter) (uint, error) {
 	db, err := GetConnection()
 
