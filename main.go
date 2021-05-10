@@ -13,15 +13,10 @@ import (
 
 var myRouter mux.Router
 var db *gorm.DB
-
-type Feed struct {
-	gorm.Model
-	Url  string `json:"url"`
-	Name string `json:"name"`
-}
+var err error
 
 type FeedList struct {
-	Feeds []Feed `json:"feeds"`
+	Feeds []database.Feed `json:"feeds"`
 }
 
 type GroupList struct {
@@ -34,11 +29,8 @@ type App struct {
 
 func (a *App) Initialize() {
 
-	db, err := database.GetConnection()
-
-	if err != nil {
-		panic("Error")
-
+	if db, err = database.GetConnection(); err != nil {
+		panic(err.Error())
 	}
 
 	a.Router = mux.NewRouter()
@@ -93,9 +85,7 @@ func (a *App) handleRequests() {
 
 func ListGroups(w http.ResponseWriter, r *http.Request) {
 
-	db, err := database.GetConnection()
-
-	if err != nil {
+	if db, err = database.GetConnection(); err != nil {
 		panic(err.Error())
 	}
 
@@ -127,14 +117,13 @@ func AddGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	group, err := database.CreateGroup(body, w)
+	var group database.Group
 
-	if err != nil {
+	if group, err = database.CreateGroup(body, w); err != nil {
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-
 	json.NewEncoder(w).Encode(group)
 
 }
@@ -143,20 +132,21 @@ func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*
+ * Feeds endpoints
+ *
+ */
 func ListFeeds(w http.ResponseWriter, r *http.Request) {
 
-	db, err := database.GetConnection()
+	var feeds []database.Feed
 
-	if err != nil {
-		panic(err.Error())
+	if feeds, err = database.ListFeeds(w); err != nil {
+		return
 	}
 
-	var groups []Feed
 	var feedResult FeedList
 
-	db.Find(&groups)
-
-	feedResult.Feeds = groups
+	feedResult.Feeds = feeds
 
 	json.NewEncoder(w).Encode(feedResult)
 }
@@ -181,15 +171,14 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Everything OK, we store the feed and return 201
-	_, err = database.CreateFeed(body, w)
-
-	if err != nil {
+	if _, err = database.CreateFeed(body, w); err != nil {
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 
 }
+
 func DeleteFeed(w http.ResponseWriter, r *http.Request) {
 
 	idStr := mux.Vars(r)["feedId"]
@@ -201,9 +190,8 @@ func DeleteFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.DeleteFeed(uint(id), w)
-
-	if err != nil {
+	// Feed with id deleted, error handling done in database
+	if err = database.DeleteFeed(uint(id), w); err != nil {
 		return
 	}
 

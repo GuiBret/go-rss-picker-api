@@ -201,7 +201,7 @@ func TestDeleteFeed(t *testing.T) {
 			panic("Test error")
 		}
 
-		var feed Feed
+		var feed database.Feed
 
 		db.Last(&feed)
 

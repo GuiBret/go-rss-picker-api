@@ -50,6 +50,21 @@ func GetFeed(id uint, w http.ResponseWriter) (Feed, error) {
 	return feed, nil
 }
 
+func ListFeeds(w http.ResponseWriter) ([]Feed, error) {
+	db, err := GetConnection()
+
+	var feeds []Feed
+
+	if err != nil {
+		HandleConnectionError(err, w)
+		return feeds, err
+	}
+
+	db.Find(&feeds)
+
+	return feeds, nil
+}
+
 func DeleteFeed(id uint, w http.ResponseWriter) error {
 
 	db, err := GetConnection()
