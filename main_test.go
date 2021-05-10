@@ -2,11 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"rss-picker-api/database"
 	"strings"
 	"testing"
 )
@@ -156,7 +154,7 @@ func TestAddFeed(t *testing.T) {
 func TestDeleteFeed(t *testing.T) {
 	t.Run("Should return an error since the argument passed is not a number", func(t *testing.T) {
 
-		req, _ := http.NewRequest("DELETE", "http://localhost:4005/feeds/abcdef", nil)
+		req, _ := http.NewRequest("DELETE", "/feeds/abcdef/", nil)
 
 		rr := httptest.NewRecorder()
 
@@ -172,33 +170,60 @@ func TestDeleteFeed(t *testing.T) {
 
 	})
 
-	t.Run("Should return an error since the entity does not exist", func(t *testing.T) {
+	// TODO: create entry point
+	// t.Run("Should return an error since the entity does not exist", func(t *testing.T) {
 
-		db, err := database.GetConnection()
+	// 	db, err := database.GetConnection()
+	// 	rr := httptest.NewRecorder()
 
-		// First, we need the max ID in the DB
-		if err != nil {
-			panic("Test error")
-		}
+	// 	// First, we need the max ID in the DB
+	// 	if err != nil {
+	// 		panic("Test error")
+	// 	}
 
-		feed := Feed{}
+	// 	feed := Feed{}
 
-		db.Last(&feed)
+	// 	db.Last(&feed)
 
-		maxId := feed.ID
+	// 	maxId := feed.ID
 
-		req, _ := http.NewRequest("DELETE", "http://localhost:4005/feeds/"+fmt.Sprint(maxId+1), nil)
+	// 	// TODO: rewrite all tests like this one
+	// 	router := mux.NewRouter()
 
-		rr := httptest.NewRecorder()
+	// 	req, _ := http.NewRequest("DELETE", "/feeds/"+fmt.Sprint(maxId+1)+"/", nil)
+	// 	router.ServeHTTP(rr, req)
 
-		handler := http.HandlerFunc(DeleteFeed)
+	// 	// // The request should have returned 404 since the entity was not found
+	// 	if status := rr.Code; status != http.StatusNotFound {
+	// 		t.Errorf("Unexpected return code, got %d want %d", status, http.StatusNotFound)
+	// 	}
 
-		handler.ServeHTTP(rr, req)
+	// })
 
-		// The request should have returned 400 since the argument is not a number
-		if status := rr.Code; status != http.StatusNotFound {
-			t.Errorf("Unexpected return code, got %d want %d", status, http.StatusNotFound)
-		}
+	// t.Run("Should delete the entity since it exists", func(t *testing.T) {
+	// 	feed := database.FeedBody{
+	// 		Name: "a",
+	// 		Url:  "https://def.com/feeds",
+	// 	}
 
-	})
+	// 	rr := httptest.NewRecorder()
+
+	// 	id, err := database.CreateFeed(feed, rr)
+
+	// 	if err != nil {
+	// 		panic("Pre test error")
+	// 	}
+
+	// 	router := mux.NewRouter()
+
+	// 	req, _ := http.NewRequest("DELETE", "/feeds/"+fmt.Sprint(id)+"/", nil)
+
+	// 	router.ServeHTTP(rr, req)
+
+	// 	// The request should have returned 200 since the entity was deleted
+	// 	if status := rr.Code; status != http.StatusOK {
+	// 		t.Errorf("Unexpected return code, got %d want %d", status, http.StatusOK)
+	// 	}
+
+	// })
 }
