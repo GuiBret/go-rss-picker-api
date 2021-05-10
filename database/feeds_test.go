@@ -117,3 +117,16 @@ func TestDeleteFeed(t *testing.T) {
 
 	})
 }
+
+func TestListFeeds(t *testing.T) {
+	t.Run("Should have returned an array of feeds", func(t *testing.T) {
+
+		mockWriter := httptest.NewRecorder()
+
+		_, err := ListFeeds(mockWriter)
+
+		if err != nil {
+			t.Errorf("Got an error but did not expect one : %s", err.Error())
+		}
+	})
+}
