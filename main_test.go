@@ -156,21 +156,7 @@ func TestAddFeed(t *testing.T) {
 func TestDeleteFeed(t *testing.T) {
 	t.Run("Should return an error since the argument passed is not a number", func(t *testing.T) {
 
-		// First, we add a new feed, and we will use the created ID to delete it
-		feed := database.FeedBody{
-			Name: "abc",
-			Url:  "https://def.com/url",
-		}
-
-		mockRR := httptest.NewRecorder()
-
-		id, err := database.CreateFeed(feed, mockRR)
-
-		if err != nil {
-			panic("Test error")
-		}
-
-		req, _ := http.NewRequest("DELETE", "http://localhost:4005/feeds/"+fmt.Sprint(id), nil)
+		req, _ := http.NewRequest("DELETE", "http://localhost:4005/feeds/abcdef", nil)
 
 		rr := httptest.NewRecorder()
 
@@ -178,7 +164,41 @@ func TestDeleteFeed(t *testing.T) {
 
 		handler.ServeHTTP(rr, req)
 
-		// The feed should not exist anymore
+		// The request should have returned 400 since the argument is not a number
+
+		if status := rr.Code; status != http.StatusBadRequest {
+			t.Errorf("Unexpected return code, got %d want %d", status, http.StatusBadRequest)
+		}
+
+	})
+
+	t.Run("Should return an error since the entity does not exist", func(t *testing.T) {
+
+		db, err := database.GetConnection()
+
+		// First, we need the max ID in the DB
+		if err != nil {
+			panic("Test error")
+		}
+
+		feed := Feed{}
+
+		db.Last(&feed)
+
+		maxId := feed.ID
+
+		req, _ := http.NewRequest("DELETE", "http://localhost:4005/feeds/"+fmt.Sprint(maxId+1), nil)
+
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(DeleteFeed)
+
+		handler.ServeHTTP(rr, req)
+
+		// The request should have returned 400 since the argument is not a number
+		if status := rr.Code; status != http.StatusNotFound {
+			t.Errorf("Unexpected return code, got %d want %d", status, http.StatusNotFound)
+		}
 
 	})
 }

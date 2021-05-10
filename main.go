@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"rss-picker-api/database"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
@@ -55,6 +56,7 @@ func main() {
 
 func SetHeaderAsJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		w.Header().Add("Content-Type", "application/json")
 
 		next.ServeHTTP(w, r)
@@ -74,12 +76,12 @@ func handleRequests() {
 	myRouter.HandleFunc("/groups", DeleteGroup).Methods("DELETE")
 
 	myRouter.HandleFunc("/groups/{groupId}/feeds", ListFeedsInGroup).Methods("GET")
-	myRouter.HandleFunc("/groups/{feedId}/feeds/{feedId}", AddFeedToGroup).Methods("POST")
-	myRouter.HandleFunc("/groups/{feedId}/feeds/{feedId}", DeleteFeedFromGroup).Methods("DELETE")
+	myRouter.HandleFunc("/groups/{groupId}/feeds/{feedId}", AddFeedToGroup).Methods("POST")
+	myRouter.HandleFunc("/groups/{groupId}/feeds/{feedId}", RemoveFeedFromGroup).Methods("DELETE")
 
+	myRouter.HandleFunc("/feeds/{feedId}", DeleteFeed).Methods("DELETE")
 	myRouter.HandleFunc("/feeds", ListFeeds).Methods("GET")
 	myRouter.HandleFunc("/feeds", AddFeed).Methods("POST")
-	myRouter.HandleFunc("/feeds", DeleteFeed).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":4005", myRouter))
 
@@ -140,18 +142,6 @@ func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ListFeedsInGroup(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func AddFeedToGroup(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func DeleteFeedFromGroup(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func ListFeeds(w http.ResponseWriter, r *http.Request) {
 
 	db, err := database.GetConnection()
@@ -190,7 +180,7 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Everything OK, we store the feed and return 201
-	id, err := database.CreateFeed(body, w)
+	_, err = database.CreateFeed(body, w)
 
 	if err != nil {
 		return
@@ -198,9 +188,35 @@ func AddFeed(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 
-	fmt.Fprintf(w, `{"id": %d}`, id)
-
 }
 func DeleteFeed(w http.ResponseWriter, r *http.Request) {
+
+	idStr := mux.Vars(r)["feedId"]
+
+	id, err := strconv.ParseUint(idStr, 10, 32)
+
+	fmt.Printf("Id : %s", idStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = database.DeleteFeed(uint(id), w)
+
+	if err != nil {
+		return
+	}
+
+}
+
+func ListFeedsInGroup(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func AddFeedToGroup(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func RemoveFeedFromGroup(w http.ResponseWriter, r *http.Request) {
 
 }
