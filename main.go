@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var myRouter mux.Router
 var db *gorm.DB
 var err error
 
