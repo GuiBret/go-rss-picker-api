@@ -127,7 +127,13 @@ func AddGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteGroup(w http.ResponseWriter, r *http.Request) {
+	groupIdToDelete, _ := strconv.ParseUint(mux.Vars(r)["groupId"], 10, 32)
 
+	if err = database.DeleteFeed(uint(groupIdToDelete), w); err != nil {
+
+	}
+
+	json.NewEncoder(w).Encode(nil)
 }
 
 /*
