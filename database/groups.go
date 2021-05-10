@@ -34,3 +34,9 @@ func CreateGroup(body GroupBody, w http.ResponseWriter) (Group, error) {
 
 	return result, nil
 }
+
+func DeleteGroup(groupId uint, w http.ResponseWriter) error {
+
+	db.Delete(Group{}, "id = ?", groupId)
+	return nil
+}
