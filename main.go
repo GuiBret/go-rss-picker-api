@@ -103,9 +103,8 @@ func AddGroup(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	body := database.GroupBody{}
-	err := decoder.Decode(&body)
 
-	if err != nil {
+	if err = decoder.Decode(&body); err != nil {
 
 		http.Error(w, "Invalid body", http.StatusBadRequest)
 		return
