@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"gorm.io/gorm"
 )
 
 type FeedBody struct {
@@ -11,10 +13,12 @@ type FeedBody struct {
 	Name string `json:"name"`
 }
 
-func CreateFeed(body FeedBody, w http.ResponseWriter) (uint, error) {
-	db, err := GetConnection()
+var err error
+var db *gorm.DB
 
-	if err != nil {
+func CreateFeed(body FeedBody, w http.ResponseWriter) (uint, error) {
+
+	if db, err = GetConnection(); err != nil {
 		HandleConnectionError(err, w)
 		return 0, err
 	}
@@ -29,9 +33,8 @@ func CreateFeed(body FeedBody, w http.ResponseWriter) (uint, error) {
 }
 
 func GetFeed(id uint, w http.ResponseWriter) (Feed, error) {
-	db, err := GetConnection()
 
-	if err != nil {
+	if db, err = GetConnection(); err != nil {
 		HandleConnectionError(err, w)
 		return Feed{}, err
 
@@ -51,11 +54,9 @@ func GetFeed(id uint, w http.ResponseWriter) (Feed, error) {
 }
 
 func ListFeeds(w http.ResponseWriter) ([]Feed, error) {
-	db, err := GetConnection()
-
 	var feeds []Feed
 
-	if err != nil {
+	if db, err = GetConnection(); err != nil {
 		HandleConnectionError(err, w)
 		return feeds, err
 	}
@@ -67,9 +68,7 @@ func ListFeeds(w http.ResponseWriter) ([]Feed, error) {
 
 func DeleteFeed(id uint, w http.ResponseWriter) error {
 
-	db, err := GetConnection()
-
-	if err != nil {
+	if db, err = GetConnection(); err != nil {
 		HandleConnectionError(err, w)
 		return err
 

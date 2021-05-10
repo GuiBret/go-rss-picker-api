@@ -3,6 +3,8 @@ package database
 import (
 	"net/http/httptest"
 	"testing"
+
+	"gorm.io/gorm"
 )
 
 func TestCreateFeed(t *testing.T) {
@@ -24,6 +26,8 @@ func TestCreateFeed(t *testing.T) {
 
 func TestGetFeed(t *testing.T) {
 	t.Run("Should return an error since the entity does not exist", func(t *testing.T) {
+
+		var db *gorm.DB
 		db, err := GetConnection()
 
 		// First, we need the max ID in the DB
