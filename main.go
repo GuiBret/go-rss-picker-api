@@ -41,17 +41,39 @@ type GroupBody struct {
 
 var group Group
 
-func main() {
+type App struct {
+	Router *mux.Router
+	DB     *gorm.DB
+}
+
+func (a *App) Initialize() {
 
 	db, err := database.GetConnection()
 
 	if err != nil {
-		panic(err.Error())
+		panic("Error")
+
 	}
 
+	a.Router = mux.NewRouter()
+
+	a.handleRequests()
+	a.DB = db
 	database.MakeMigration(db)
 
-	handleRequests()
+}
+
+func (a *App) Run() {
+	log.Fatal(http.ListenAndServe(":4005", a.Router))
+}
+
+func main() {
+	a := App{}
+
+	a.Initialize()
+
+	a.Run()
+
 }
 
 func SetHeaderAsJSON(next http.Handler) http.Handler {
@@ -64,26 +86,22 @@ func SetHeaderAsJSON(next http.Handler) http.Handler {
 
 }
 
-func handleRequests() {
-
-	myRouter := mux.NewRouter()
+func (a *App) handleRequests() {
 
 	// Middleware setting all return types to JSON
-	myRouter.Use(SetHeaderAsJSON)
+	a.Router.Use(SetHeaderAsJSON)
 
-	myRouter.HandleFunc("/groups", ListGroups).Methods("GET")
-	myRouter.HandleFunc("/groups", AddGroup).Methods("POST")
-	myRouter.HandleFunc("/groups", DeleteGroup).Methods("DELETE")
+	a.Router.HandleFunc("/groups", ListGroups).Methods("GET")
+	a.Router.HandleFunc("/groups", AddGroup).Methods("POST")
+	a.Router.HandleFunc("/groups/{groupId:[0-9]+}", DeleteGroup).Methods("DELETE")
 
-	myRouter.HandleFunc("/groups/{groupId}/feeds", ListFeedsInGroup).Methods("GET")
-	myRouter.HandleFunc("/groups/{groupId}/feeds/{feedId}", AddFeedToGroup).Methods("POST")
-	myRouter.HandleFunc("/groups/{groupId}/feeds/{feedId}", RemoveFeedFromGroup).Methods("DELETE")
+	a.Router.HandleFunc("/groups/{groupId}/feeds", ListFeedsInGroup).Methods("GET")
+	a.Router.HandleFunc("/groups/{groupId}/feeds/{feedId}", AddFeedToGroup).Methods("POST")
+	a.Router.HandleFunc("/groups/{groupId}/feeds/{feedId}", RemoveFeedFromGroup).Methods("DELETE")
 
-	myRouter.HandleFunc("/feeds/{feedId}", DeleteFeed).Methods("DELETE")
-	myRouter.HandleFunc("/feeds", ListFeeds).Methods("GET")
-	myRouter.HandleFunc("/feeds", AddFeed).Methods("POST")
-
-	log.Fatal(http.ListenAndServe(":4005", myRouter))
+	a.Router.HandleFunc("/feeds/{feedId}/", DeleteFeed).Methods("DELETE")
+	a.Router.HandleFunc("/feeds", ListFeeds).Methods("GET")
+	a.Router.HandleFunc("/feeds", AddFeed).Methods("POST")
 
 }
 
