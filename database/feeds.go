@@ -22,7 +22,6 @@ func CreateFeed(body FeedBody, w http.ResponseWriter) (uint, error) {
 	if err != nil {
 		HandleConnectionError(err, w)
 		return 0, err
-
 	}
 
 	feed := Feed{
@@ -71,6 +70,7 @@ func DeleteFeed(id uint, w http.ResponseWriter) error {
 	result := db.Find(&feed, "id = ?", id)
 
 	if result.RowsAffected == 0 {
+		w.WriteHeader(http.StatusNotFound)
 		return errors.New(fmt.Sprintf("The entity with ID %d does not exist", id))
 	}
 
